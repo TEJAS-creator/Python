@@ -3,7 +3,7 @@ import speech_recognition as sr
 import pyttsx3
 
 # API Key
-API_KEY = 'AIzaSyBwDhJ7KpWervFG3NCmSecXg0co6YTgWk8'
+API_KEY = 'Your_API_Key'
 
 # Configure API key
 ai.configure(api_key=API_KEY)
