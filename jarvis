@@ -35,7 +35,7 @@ else:
     engine.setProperty('voice', voices[0].id)  # Set the default voice     1=female    0=male
 
 # Set your OpenAI API key
-OPENAI_API_KEY = 'sk-proj-6yLnl0mH3qYyQc95etV5T3BlbkFJH2pjeb3N2Ois1CZ7N8Ws'
+OPENAI_API_KEY = 'Your_API_Key'
 openai.api_key = OPENAI_API_KEY    
 
 # Function to speak out text
