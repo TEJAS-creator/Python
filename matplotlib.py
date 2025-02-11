@@ -13,6 +13,7 @@ plt.legend()  # Show legend
 # Show the plot  
 plt.show()
 
+
 # Scatter Plot
 import matplotlib.pyplot as plt  
 # Sample data  
