@@ -7,9 +7,10 @@ a = pd.read_csv("cars.csv", usecols=["CarName"])  # Read only selected columns [
 a = pd.read_csv("cars.csv", na_values=["?", "NA", "NULL"])  # Treat ?, NA, NULL as NaN
 a = pd.read_csv("output.csv")
 cars_dict = a.to_dict()
-df = pd.read_csv("data.csv", skiprows=5)  # Skip first 5 rows
+a = pd.read_csv("data.csv", skiprows=5)  # Skip first 5 rows
 a = pd.read_csv("cars.csv") # always read() before info()
 a.info() # Display information about the DataFrame  
+a.describe()
 print(a)  # This will print the DataFrame
 
 # Read csv from url
