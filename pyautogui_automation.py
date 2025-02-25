@@ -1,6 +1,12 @@
 import pyautogui
 import time
 
+import subprocess
+
+# Open an application
+app_path = r"C:\Path\To\Your\Application.exe"  
+subprocess.Popen(app_path)
+
 # Give yourself a few seconds to switch to the target application
 print("You have 5 seconds to switch to the target application...")
 time.sleep(5)
