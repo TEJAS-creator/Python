@@ -1,97 +1,144 @@
-import pygame
+# Movement logic
+# Food consumption
+# Collision detection (walls and self)
+# Score update
+# Game over handling
+# Centered window
+
+
+
+from tkinter import *
 import random
 
-# Initialize pygame
-pygame.init()
+# Constants
+GAME_WIDTH = 1000
+GAME_HEIGHT = 500
+SPEED = 100
+SPACE_SIZE = 30
+BODY_PARTS = 3
+SNAKE_COLOR = "#00FF00"
+FOOD_COLOR = "#FF0000"
+BACKGROUND_COLOR = "#000000"
 
-# Game Constants
-WIDTH = 600
-HEIGHT = 400
-BLOCK_SIZE = 20
-SPEED = 10
+class Snake:
+    def __init__(self):
+        self.body_size = BODY_PARTS
+        self.coordinates = []
+        self.squares = []
 
-# Colors
-WHITE = (255, 255, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLACK = (0, 0, 0)
+        for _ in range(BODY_PARTS):
+            self.coordinates.append([0, 0])
 
-# Directions
-UP = (0, -1)
-DOWN = (0, 1)
-LEFT = (-1, 0)
-RIGHT = (1, 0)
+        for x, y in self.coordinates:
+            square = canvas.create_rectangle(x, y, x + SPACE_SIZE, y + SPACE_SIZE, fill=SNAKE_COLOR, tag="snake")
+            self.squares.append(square)
 
-# Game Window
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Snake Game")
+class Food:
+    def __init__(self):
+        x = random.randint(0, (GAME_WIDTH // SPACE_SIZE) - 1) * SPACE_SIZE
+        y = random.randint(0, (GAME_HEIGHT // SPACE_SIZE) - 1) * SPACE_SIZE
+        self.coordinates = [x, y]
 
-# Clock
-clock = pygame.time.Clock()
+        canvas.create_oval(x, y, x + SPACE_SIZE, y + SPACE_SIZE, fill=FOOD_COLOR, tag="food")
 
-def draw_snake(snake):
-    for block in snake:
-        pygame.draw.rect(screen, GREEN, pygame.Rect(block[0], block[1], BLOCK_SIZE, BLOCK_SIZE))
+def next_turn(snake, food):
+    x, y = snake.coordinates[0]
 
-def place_food():
-    x = random.randint(0, (WIDTH - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
-    y = random.randint(0, (HEIGHT - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
-    return [x, y]
+    if direction == "up":
+        y -= SPACE_SIZE
+    elif direction == "down":
+        y += SPACE_SIZE
+    elif direction == "left":
+        x -= SPACE_SIZE
+    elif direction == "right":
+        x += SPACE_SIZE
 
-def main():
-    running = True
-    direction = RIGHT
-    snake = [[100, 100], [80, 100], [60, 100]]  # Initial snake position
-    food = place_food()
-    score = 0
+    snake.coordinates.insert(0, [x, y])
+    square = canvas.create_rectangle(x, y, x + SPACE_SIZE, y + SPACE_SIZE, fill=SNAKE_COLOR)
+    snake.squares.insert(0, square)
 
-    while running:
-        screen.fill(BLACK)
+    # Snake eats food
+    if x == food.coordinates[0] and y == food.coordinates[1]:
+        global score
+        score += 1
+        label.config(text="Score:{}".format(score))
+        canvas.delete("food")
+        food = Food()
+    else:
+        del snake.coordinates[-1]
+        canvas.delete(snake.squares[-1])
+        del snake.squares[-1]
 
-        # Handle Events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP and direction != DOWN:
-                    direction = UP
-                elif event.key == pygame.K_DOWN and direction != UP:
-                    direction = DOWN
-                elif event.key == pygame.K_LEFT and direction != RIGHT:
-                    direction = LEFT
-                elif event.key == pygame.K_RIGHT and direction != LEFT:
-                    direction = RIGHT
+    if check_collisions(snake):
+        game_over()
+    else:
+        window.after(SPEED, next_turn, snake, food)
 
-        # Move Snake
-        new_head = [snake[0][0] + direction[0] * BLOCK_SIZE, snake[0][1] + direction[1] * BLOCK_SIZE]
-        snake.insert(0, new_head)
+def change_direction(new_direction):
+    global direction
+    if new_direction == "left" and direction != "right":
+        direction = new_direction
+    elif new_direction == "right" and direction != "left":
+        direction = new_direction
+    elif new_direction == "up" and direction != "down":
+        direction = new_direction
+    elif new_direction == "down" and direction != "up":
+        direction = new_direction
 
-        # Check Collision (Wall)
-        if new_head[0] < 0 or new_head[0] >= WIDTH or new_head[1] < 0 or new_head[1] >= HEIGHT:
-            running = False
+def check_collisions(snake):
+    x, y = snake.coordinates[0]
 
-        # Check Collision (Self)
-        if new_head in snake[1:]:
-            running = False
+    # Check wall collisions
+    if x < 0 or x >= GAME_WIDTH or y < 0 or y >= GAME_HEIGHT:
+        return True
 
-        # Check if food is eaten
-        if new_head == food:
-            score += 1
-            food = place_food()
-        else:
-            snake.pop()
+    # Check self collision
+    for body_part in snake.coordinates[1:]:
+        if x == body_part[0] and y == body_part[1]:
+            return True
 
-        # Draw Snake and Food
-        draw_snake(snake)
-        pygame.draw.rect(screen, RED, pygame.Rect(food[0], food[1], BLOCK_SIZE, BLOCK_SIZE))
+    return False
 
-        # Update Screen
-        pygame.display.flip()
-        clock.tick(SPEED)
+def game_over():
+    canvas.delete(ALL)
+    canvas.create_text(GAME_WIDTH / 2, GAME_HEIGHT / 2,
+                       font=("consolas", 40), text="GAME OVER", fill="red", tag="gameover")
 
-    pygame.quit()
-    print(f"Game Over! Your Score: {score}")
+# Set up window
+window = Tk()
+window.title("Snake Game")
+window.resizable(False, False)
 
-# Run the Game
-if __name__ == "__main__":
-    main()
+score = 0
+direction = "down"
+
+label = Label(window, text="Score:{}".format(score), font=("consolas", 40))
+label.pack()
+
+canvas = Canvas(window, bg=BACKGROUND_COLOR, height=GAME_HEIGHT, width=GAME_WIDTH)
+canvas.pack()
+
+# Center the window
+window_width = GAME_WIDTH
+window_height = GAME_HEIGHT + 80
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
+
+x = int((screen_width / 2) - (window_width / 2))
+y = int((screen_height / 2) - (window_height / 2))
+window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+# Create objects
+snake = Snake()
+food = Food()
+
+# Key bindings
+window.bind("<Left>", lambda event: change_direction("left"))
+window.bind("<Right>", lambda event: change_direction("right"))
+window.bind("<Up>", lambda event: change_direction("up"))
+window.bind("<Down>", lambda event: change_direction("down"))
+
+# Start the game
+next_turn(snake, food)
+
+window.mainloop()
